@@ -1,14 +1,28 @@
-// Extract relevant information from the webpage
-const productTitle = document.title;
-const priceElement = document.getElementById('priceElementId');
-const productPrice = priceElement ? priceElement.innerText : 'Price not found';
+// content.js
 
-// Send the information to the background script
-chrome.runtime.sendMessage({
-  action: 'trackPrice',
-  title: productTitle,
-  price: productPrice
-}, function(response) {
-  // Handle the response from the background script if needed
-  console.log('Response from background script:', response);
-});
+// Check if jQuery is available, if not inject it
+if (typeof jQuery === 'undefined') {
+  const script = document.createElement('script');
+  script.src = 'https://code.jquery.com/jquery-3.6.4.min.js';
+  script.type = 'text/javascript';
+  script.onload = scrapePrices; // Call the function once jQuery is loaded
+  document.head.appendChild(script);
+} else {
+  scrapePrices();
+}
+
+function scrapePrices() {
+  // Your scraping logic here
+  // This is just a generic example, you'll need to adapt it to the specific website
+
+  // Example: Scraping prices with jQuery
+  const prices = [];
+  $('.product-price').each(function () {
+    const priceText = $(this).text().trim();
+    const price = parseFloat(priceText.replace('$', '').replace(',', ''));
+    prices.push(price);
+  });
+
+  // Send the scraped prices to the background script
+  chrome.runtime.sendMessage({ prices: prices });
+}
